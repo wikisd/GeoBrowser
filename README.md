@@ -21,7 +21,7 @@
 
 ## 📥 软件下载
 
-请前往仓库右侧的 **[Releases 发行版页面](https://github.com/wikisd/GeoBrowser/releases/tag/v1.0.0))** 下载最新打包好的完整压缩包（内置完整运行依赖环境），解压至常规目录（如 `D:\GeoBrowser`）后，直接双击 **`GeoBrowser.exe`** 即可免安装运行。
+请前往仓库右侧的 **[Releases 发行版页面](https://github.com/wikisd/GeoBrowser/releases)** 下载最新打包好的完整压缩包（内置完整运行依赖环境），解压至常规目录（如 `D:\GeoBrowser`）后，直接双击 **`GeoBrowser.exe`** 即可免安装运行。
 
 ## 📦 运行依赖组件
 
@@ -71,7 +71,7 @@ A lightweight Windows desktop browser built on WebView2 (.NET), featuring isolat
 
 ## 📥 Download
 
-Please visit the **[Releases Page](https://github.com/wikisd/GeoBrowser/releases/tag/v1.0.0)** on the right sidebar to download the latest pre-packaged archive (bundled with all required runtime binaries). Extract it to a standard folder (e.g., `D:\GeoBrowser`) and run **`GeoBrowser.exe`** directly without installation.
+Please visit the **[Releases Page](https://github.com/wikisd/GeoBrowser/releases)** on the right sidebar to download the latest pre-packaged archive (bundled with all required runtime binaries). Extract it to a standard folder (e.g., `D:\GeoBrowser`) and run **`GeoBrowser.exe`** directly without installation.
 
 ## 📦 Prerequisites
 
