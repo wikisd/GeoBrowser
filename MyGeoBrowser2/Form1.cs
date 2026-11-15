@@ -34,10 +34,9 @@ namespace MyGeoBrowser2
 
         public Form1()
         {
-            this.Text = "Geo Browser - 全能媒体下载版 (INS / FB / YT / X / TK)";
+            this.Text = Lang.T("Geo Browser - 全能媒体下载版 (INS / FB / YT / X / TK)", "Geo Browser - Media Downloader Edition (INS / FB / YT / X / TK)");
             this.Size = new Size(1500, 920);
             this.StartPosition = FormStartPosition.CenterScreen;
-            // 自动将嵌入的软件图标同步应用到窗口左上角和任务栏
             Icon? exeIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             if (exeIcon != null) this.Icon = exeIcon;
             if (!Directory.Exists(downloadFolder)) Directory.CreateDirectory(downloadFolder);
@@ -46,19 +45,19 @@ namespace MyGeoBrowser2
 
             Button btnBack = new Button { Text = "←", Width = 32, Dock = DockStyle.Left };
             Button btnRefresh = new Button { Text = "↻", Width = 32, Dock = DockStyle.Left };
-            Button btnNewTab = new Button { Text = "+ 新标签", Width = 70, Dock = DockStyle.Left };
-            Button btnCloseOthers = new Button { Text = "关其他页", Width = 70, Dock = DockStyle.Left };
+            Button btnNewTab = new Button { Text = Lang.T("+ 新标签", "+ New Tab"), Width = 92, Dock = DockStyle.Left };
+            Button btnCloseOthers = new Button { Text = Lang.T("关其他页", "Close Others"), Width = 102, Dock = DockStyle.Left };
 
-            Button btnGo = new Button { Text = "前往", Width = 48, Dock = DockStyle.Right };
-            Button btnDownloadMgr = new Button { Text = "下载管理/更新", Width = 110, Dock = DockStyle.Right, BackColor = Color.FromArgb(40, 167, 69), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
-            Button btnScrapeClean = new Button { Text = "⚡ 抓本页列表", Width = 105, Dock = DockStyle.Right, BackColor = Color.FromArgb(23, 162, 184), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
-            Button btnDownloadCurrent = new Button { Text = "下载当前视频", Width = 98, Dock = DockStyle.Right, BackColor = Color.FromArgb(255, 140, 0), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            Button btnGo = new Button { Text = Lang.T("前往", "Go"), Width = 50, Dock = DockStyle.Right };
+            Button btnDownloadMgr = new Button { Text = Lang.T("下载管理/更新", "Downloads / Update"), Width = 152, Dock = DockStyle.Right, BackColor = Color.FromArgb(40, 167, 69), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            Button btnScrapeClean = new Button { Text = Lang.T("⚡ 抓本页列表", "⚡ Extract Page"), Width = 128, Dock = DockStyle.Right, BackColor = Color.FromArgb(23, 162, 184), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            Button btnDownloadCurrent = new Button { Text = Lang.T("下载当前视频", "Download Video"), Width = 128, Dock = DockStyle.Right, BackColor = Color.FromArgb(255, 140, 0), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
             Button btnIns = new Button { Text = "INS", Width = 42, Dock = DockStyle.Right };
             Button btnFb = new Button { Text = "FB", Width = 38, Dock = DockStyle.Right };
             Button btnYt = new Button { Text = "YT", Width = 38, Dock = DockStyle.Right };
             Button btnX = new Button { Text = "X", Width = 32, Dock = DockStyle.Right };
             Button btnTk = new Button { Text = "TK", Width = 38, Dock = DockStyle.Right };
-            Button btnCheck = new Button { Text = "检测", Width = 45, Dock = DockStyle.Right };
+            Button btnCheck = new Button { Text = Lang.T("检测", "Check"), Width = 52, Dock = DockStyle.Right };
 
             urlBox = new TextBox { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 11) };
 
@@ -76,7 +75,18 @@ namespace MyGeoBrowser2
             btnTk.Click += async (s, e) => await AddNewTabAsync("https://tiktok.com");
             btnCheck.Click += async (s, e) => await AddNewTabAsync("https://whoer.net");
 
-            btnDownloadCurrent.Click += (s, e) => { var wv = GetActiveWebView(); if (wv?.Source != null) TriggerSingleDownload("当前页视频/帖子", wv.Source.ToString(), "独立帖子/视频", true); };
+            btnDownloadCurrent.Click += (s, e) =>
+            {
+                var wv = GetActiveWebView();
+                if (wv?.Source == null) return;
+                string url = wv.Source.ToString();
+                if (url.Contains("google.com") || url.Contains("whoer.net"))
+                {
+                    lblStatus.Text = Lang.T("当前页面不是音视频或帖子页面，请先打开具体视频或帖子。", "Current page is not a media/post page.");
+                    return;
+                }
+                TriggerSingleDownload(Lang.T("当前页视频/帖子", "Current Page Media"), url, Lang.T("独立帖子/视频", "Independent Post/Video"), true);
+            };
             btnScrapeClean.Click += async (s, e) => await OpenAndScrapeCleanAsync();
             btnDownloadMgr.Click += (s, e) => OpenDownloadManagerWindow();
 
@@ -96,24 +106,26 @@ namespace MyGeoBrowser2
             navBar.Controls.Add(btnRefresh);
             navBar.Controls.Add(btnBack);
             Panel proxyBar = new Panel { Dock = DockStyle.Top, Height = 38, BackColor = Color.FromArgb(232, 240, 254), Padding = new Padding(8, 5, 8, 5) };
-            chkUseProxy = new CheckBox { Text = "启用独立代理 (软路由IP:端口)：", AutoSize = true, Dock = DockStyle.Left, Font = new Font("Segoe UI", 9.5f, FontStyle.Bold), Padding = new Padding(0, 3, 5, 0) };
+            chkUseProxy = new CheckBox { Text = Lang.T("启用独立代理 (IP:端口)：", "Enable Proxy (IP:Port):"), AutoSize = true, Dock = DockStyle.Left, Font = new Font("Segoe UI", 9.5f, FontStyle.Bold), Padding = new Padding(0, 3, 5, 0) };
             cmbProxyType = new ComboBox { Width = 90, Dock = DockStyle.Left, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 9.5f) };
             cmbProxyType.Items.Add("socks5");
             cmbProxyType.Items.Add("http");
             cmbProxyType.SelectedIndex = 0;
 
-            txtProxyAddress = new TextBox { Width = 175, Dock = DockStyle.Left, Font = new Font("Segoe UI", 10), PlaceholderText = "例如 192.168.1.1:7890" };
-            Button btnSaveRestart = new Button { Text = "保存代理并重启", Width = 115, Dock = DockStyle.Left, BackColor = Color.FromArgb(0, 120, 215), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
-            Button btnSyncLocation = new Button { Text = "🔄 同步当前IP定位", Width = 135, Dock = DockStyle.Left, BackColor = Color.FromArgb(255, 111, 0), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
-            Button btnSettings = new Button { Text = "⚙️ 默认主页设置", Width = 125, Dock = DockStyle.Left, BackColor = Color.FromArgb(90, 98, 104), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
-
-            Label lblTip = new Label { Text = "提示：修改代理后点“保存代理并重启”；软路由换节点后点“同步当前IP定位”。", AutoSize = true, Dock = DockStyle.Left, ForeColor = Color.DimGray, Padding = new Padding(10, 5, 0, 0) };
+            txtProxyAddress = new TextBox { Width = 175, Dock = DockStyle.Left, Font = new Font("Segoe UI", 10), PlaceholderText = Lang.T("例如 192.168.1.1:7890", "e.g. 192.168.1.1:7890") };
+            Button btnSaveRestart = new Button { Text = Lang.T("保存代理并重启", "Save & Restart"), Width = 115, Dock = DockStyle.Left, BackColor = Color.FromArgb(0, 120, 215), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            Button btnSyncLocation = new Button { Text = Lang.T("🔄 同步当前IP定位", "🔄 Sync IP Location"), Width = 138, Dock = DockStyle.Left, BackColor = Color.FromArgb(255, 111, 0), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            Button btnSettings = new Button { Text = Lang.T("⚙️ 默认主页设置", "⚙️ Startup Page"), Width = 125, Dock = DockStyle.Left, BackColor = Color.FromArgb(90, 98, 104), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            Button btnLang = new Button { Text = Lang.T("🌐 EN", "🌐 中文"), Width = 72, Dock = DockStyle.Left, BackColor = Color.FromArgb(111, 66, 193), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            Label lblTip = new Label { Text = Lang.T("提示：修改代理后点“保存代理并重启”；换节点后点“同步当前IP定位”。", "Tip: Click 'Save & Restart' after changing proxy; click 'Sync IP Location' after switching nodes."), AutoSize = true, Dock = DockStyle.Left, ForeColor = Color.DimGray, Padding = new Padding(10, 5, 0, 0) };
 
             btnSaveRestart.Click += (s, e) => { SaveProxyConfig(); Application.Restart(); Environment.Exit(0); };
             btnSyncLocation.Click += async (s, e) => await RefreshLocationForAllTabsAsync();
             btnSettings.Click += (s, e) => OpenHomeSettingsDialog();
+            btnLang.Click += (s, e) => { SaveProxyConfig(); Lang.ToggleLanguage(); Application.Restart(); Environment.Exit(0); };
 
             proxyBar.Controls.Add(lblTip);
+            proxyBar.Controls.Add(btnLang);
             proxyBar.Controls.Add(btnSettings);
             proxyBar.Controls.Add(btnSyncLocation);
             proxyBar.Controls.Add(btnSaveRestart);
@@ -125,7 +137,7 @@ namespace MyGeoBrowser2
 
 
             Panel bottomBar = new Panel { Dock = DockStyle.Bottom, Height = 26, BackColor = Color.FromArgb(240, 240, 240), Padding = new Padding(8, 4, 8, 4) };
-            lblStatus = new Label { Text = "正在初始化浏览器与检测代理...", Dock = DockStyle.Fill, ForeColor = Color.DarkSlateGray, Font = new Font("Segoe UI", 9f) };
+            lblStatus = new Label { Text = Lang.T("正在初始化浏览器与检测代理...", "Initializing browser and checking proxy..."), Dock = DockStyle.Fill, ForeColor = Color.DarkSlateGray, Font = new Font("Segoe UI", 9f) };
             bottomBar.Controls.Add(lblStatus);
 
             tabControl = new TabControl
@@ -248,7 +260,10 @@ namespace MyGeoBrowser2
                 downloadForm.BringToFront();
             }
             downloadForm!.AddSingleAndStartNow(title, url, mediaType);
-            lblStatus.Text = $"已加入后台静默下载：{title}（可点右上角“下载管理/更新”查看进度）";
+            lblStatus.Text = Lang.T(
+                $"已加入后台静默下载：{title}（可点右上角“下载管理/更新”查看进度）",
+                $"Added to background queue: {title} (Click 'Downloads / Update' to view progress)"
+            );
         }
 
         private async Task OpenAndScrapeCleanAsync()
@@ -507,15 +522,18 @@ namespace MyGeoBrowser2
                 if (!string.IsNullOrEmpty(proxyUrl))
                 {
                     browserArgs += " --proxy-server=" + proxyUrl;
-                    lblStatus.Text = "正在通过代理 [" + proxyUrl + "] 检测出口位置...";
+                    lblStatus.Text = Lang.T("正在通过代理 [" + proxyUrl + "] 检测出口位置...", "Detecting exit location via proxy [" + proxyUrl + "]...");
                 }
-                else lblStatus.Text = "未启用独立代理，正在使用系统默认网络检测位置...";
+                else lblStatus.Text = Lang.T("未启用独立代理，正在使用系统默认网络检测位置...", "Proxy disabled, detecting location via default network...");
 
                 var locResult = await GetCurrentIpLocationAsync(proxyUrl);
                 currentLat = locResult.lat;
                 currentLon = locResult.lon;
                 currentTimezone = locResult.timezone;
-                lblStatus.Text = $"当前状态：{locResult.statusMsg} | 注入坐标：{currentLat}, {currentLon} | 时区：{currentTimezone}";
+                lblStatus.Text = Lang.T(
+                    $"当前状态：{locResult.statusMsg} | 注入坐标：{currentLat}, {currentLon} | 时区：{currentTimezone}",
+                    $"Status: {locResult.statusMsg} | Geolocation: {currentLat}, {currentLon} | Timezone: {currentTimezone}"
+                );
 
                 var options = new CoreWebView2EnvironmentOptions { Language = "en-US", AdditionalBrowserArguments = browserArgs };
                 string userDataFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BrowserData");
@@ -540,12 +558,12 @@ namespace MyGeoBrowser2
         private void OpenHomeSettingsDialog()
         {
             string homeFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "home_url.txt");
-            Form dlg = new Form { Text = "浏览器默认启动主页设置", Size = new Size(460, 210), StartPosition = FormStartPosition.CenterParent, FormBorderStyle = FormBorderStyle.FixedDialog, MaximizeBox = false, MinimizeBox = false };
+            Form dlg = new Form { Text = Lang.T("浏览器默认启动主页设置", "Startup Homepage Settings"), Size = new Size(460, 210), StartPosition = FormStartPosition.CenterParent, FormBorderStyle = FormBorderStyle.FixedDialog, MaximizeBox = false, MinimizeBox = false };
 
-            Label lbl = new Label { Text = "选择快捷预设或直接输入软件启动时打开的默认网址：", Left = 20, Top = 18, AutoSize = true };
+            Label lbl = new Label { Text = Lang.T("选择快捷预设或直接输入软件启动时打开的默认网址：", "Select a preset or enter custom startup URL:"), Left = 20, Top = 18, AutoSize = true };
             ComboBox cmbPreset = new ComboBox { Left = 20, Top = 45, Width = 400, DropDownStyle = ComboBoxStyle.DropDownList };
-            cmbPreset.Items.Add("https://whoer.net (推荐：启动先检测IP与伪装度)");
-            cmbPreset.Items.Add("https://google.com (Google 搜索)");
+            cmbPreset.Items.Add("https://whoer.net (IP & Fingerprint Check)");
+            cmbPreset.Items.Add("https://google.com (Google Search)");
             cmbPreset.Items.Add("https://instagram.com (Instagram)");
             cmbPreset.Items.Add("https://youtube.com (YouTube)");
             cmbPreset.Items.Add("https://x.com (X / Twitter)");
@@ -559,8 +577,8 @@ namespace MyGeoBrowser2
                 if (spaceIdx > 0) txtCustomUrl.Text = sel.Substring(0, spaceIdx);
             };
 
-            Button btnOk = new Button { Text = "保存设置", Left = 230, Top = 122, Width = 90, Height = 30, BackColor = Color.FromArgb(0, 120, 215), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
-            Button btnCancel = new Button { Text = "取消", Left = 330, Top = 122, Width = 90, Height = 30 };
+            Button btnOk = new Button { Text = Lang.T("保存设置", "Save"), Left = 230, Top = 122, Width = 90, Height = 30, BackColor = Color.FromArgb(0, 120, 215), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            Button btnCancel = new Button { Text = Lang.T("取消", "Cancel"), Left = 330, Top = 122, Width = 90, Height = 30 };
 
             btnOk.Click += (s, e) =>
             {
@@ -569,7 +587,7 @@ namespace MyGeoBrowser2
                 {
                     if (!url.StartsWith("http://") && !url.StartsWith("https://")) url = "https://" + url;
                     File.WriteAllText(homeFile, url);
-                    lblStatus.Text = "默认启动主页已保存为：" + url;
+                    lblStatus.Text = Lang.T("默认启动主页已保存为：", "Startup homepage saved: ") + url;
                 }
                 dlg.Close();
             };
@@ -583,7 +601,7 @@ namespace MyGeoBrowser2
         private async Task AddNewTabAsync(string initialUrl)
         {
             if (sharedEnv == null) return;
-            TabPage tabPage = new TabPage("加载中...");
+            TabPage tabPage = new TabPage(Lang.T("加载中...", "Loading..."));
             WebView2 webView = new WebView2 { Dock = DockStyle.Fill };
             tabPage.Controls.Add(webView);
             tabControl.TabPages.Add(tabPage);
@@ -675,7 +693,7 @@ namespace MyGeoBrowser2
             };
             webView.CoreWebView2.PermissionRequested += (s, args) => { if (args.PermissionKind == CoreWebView2PermissionKind.Geolocation) args.State = CoreWebView2PermissionState.Allow; };
 
-            // 精准指哪打哪右键菜单（已支持 TK / INS / FB / YT / X）
+            // 精准指哪打哪右键菜单 (已支持 TK / INS / FB / YT / X)
             webView.CoreWebView2.ContextMenuRequested += (s, args) =>
             {
                 var menuList = args.MenuItems;
@@ -683,24 +701,24 @@ namespace MyGeoBrowser2
                 if (args.ContextMenuTarget.Kind == CoreWebView2ContextMenuTargetKind.Image && args.ContextMenuTarget.HasSourceUri)
                 {
                     string imgUri = args.ContextMenuTarget.SourceUri;
-                    var itemImg = webView.CoreWebView2.Environment.CreateContextMenuItem("🖼️ 精准下载此单张原图", null, CoreWebView2ContextMenuItemKind.Command);
-                    itemImg.CustomItemSelected += (sender, e) => TriggerSingleDownload("单张原图", imgUri, "单张原图", false);
+                    var itemImg = webView.CoreWebView2.Environment.CreateContextMenuItem(Lang.T("🖼️ 精准下载此单张原图", "🖼️ Download Original Image"), null, CoreWebView2ContextMenuItemKind.Command);
+                    itemImg.CustomItemSelected += (sender, e) => TriggerSingleDownload(Lang.T("单张原图", "Single Image"), imgUri, Lang.T("单张原图", "Single Image"), false);
                     menuList.Insert(0, itemImg);
                 }
 
                 if (args.ContextMenuTarget.HasLinkUri)
                 {
                     string linkUri = args.ContextMenuTarget.LinkUri;
-                    var itemLink = webView.CoreWebView2.Environment.CreateContextMenuItem("🎯 精准下载此独立视频/帖子", null, CoreWebView2ContextMenuItemKind.Command);
-                    itemLink.CustomItemSelected += (sender, e) => TriggerSingleDownload("独立视频/帖子", linkUri, "独立帖子/视频", false);
+                    var itemLink = webView.CoreWebView2.Environment.CreateContextMenuItem(Lang.T("🎯 精准下载此独立视频/帖子", "🎯 Download Single Video / Post"), null, CoreWebView2ContextMenuItemKind.Command);
+                    itemLink.CustomItemSelected += (sender, e) => TriggerSingleDownload(Lang.T("独立视频/帖子", "Single Video / Post"), linkUri, Lang.T("独立帖子/视频", "Independent Post/Video"), false);
                     menuList.Insert(0, itemLink);
                 }
 
                 string currentPageUrl = webView.Source.ToString();
-                if (currentPageUrl.Contains("/watch?v=") || currentPageUrl.Contains("/shorts/") || currentPageUrl.Contains("/p/") || currentPageUrl.Contains("/reel/") || currentPageUrl.Contains("/status/") || currentPageUrl.Contains("/video/"))
+                if (currentPageUrl.Contains("/watch?v=") || currentPageUrl.Contains("/shorts/") || currentPageUrl.Contains("/p/") || currentPageUrl.Contains("/reel/") || currentPageUrl.Contains("/status/"))
                 {
-                    var itemCurrent = webView.CoreWebView2.Environment.CreateContextMenuItem("🎬 下载当前正在看的视频/帖子", null, CoreWebView2ContextMenuItemKind.Command);
-                    itemCurrent.CustomItemSelected += (sender, e) => TriggerSingleDownload("当前观看媒体", currentPageUrl, "独立帖子/视频", false);
+                    var itemCurrent = webView.CoreWebView2.Environment.CreateContextMenuItem(Lang.T("🎬 下载当前正在看的视频/帖子", "🎬 Download Current Video / Post"), null, CoreWebView2ContextMenuItemKind.Command);
+                    itemCurrent.CustomItemSelected += (sender, e) => TriggerSingleDownload(Lang.T("当前观看媒体", "Current Media"), currentPageUrl, Lang.T("独立帖子/视频", "Independent Post/Video"), false);
                     menuList.Insert(0, itemCurrent);
                 }
             };
@@ -714,8 +732,7 @@ namespace MyGeoBrowser2
         private async Task RefreshLocationForAllTabsAsync()
         {
             string proxyUrl = GetCurrentProxyUrl();
-            lblStatus.Text = "正在重新检测当前代理 IP 的地理位置...";
-
+            lblStatus.Text = Lang.T("正在重新检测当前代理出口 IP 与地理位置...", "Syncing proxy IP and geolocation...");
             var locResult = await GetCurrentIpLocationAsync(proxyUrl);
             currentLat = locResult.lat;
             currentLon = locResult.lon;
@@ -758,85 +775,53 @@ namespace MyGeoBrowser2
                 handler.Proxy = new WebProxy(proxyUrl);
                 handler.UseProxy = true;
             }
+            using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(8) };
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
 
-            using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(10) };
-            client.DefaultRequestHeaders.Add("User-Agent", "curl/8.0.1");
-
-            // 备用接口 1：ip.sb（对代理节点最友好，几乎不触发 HTML 验证码）
             try
             {
                 string json = await client.GetStringAsync("https://ip.sb");
-                if (json.TrimStart().StartsWith("{"))
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("latitude", out var latP) && root.TryGetProperty("longitude", out var lonP))
                 {
-                    using var doc = JsonDocument.Parse(json);
-                    var root = doc.RootElement;
-                    if (root.TryGetProperty("latitude", out var latP) && root.TryGetProperty("longitude", out var lonP))
-                    {
-                        var (safeLat, safeLon) = ApplyResidentialOffset(latP.GetDouble(), lonP.GetDouble());
-                        string tz = root.TryGetProperty("timezone", out var tzP) ? tzP.GetString() ?? "America/Los_Angeles" : "America/Los_Angeles";
-                        string ip = root.TryGetProperty("ip", out var ipP) ? ipP.GetString() ?? "" : "";
-                        string city = root.TryGetProperty("city", out var cityP) ? cityP.GetString() ?? "" : "";
-                        string country = root.TryGetProperty("country_code", out var cP) ? cP.GetString() ?? "" : "";
-                        return (safeLat, safeLon, tz, $"代理已连通 ({ip} - {city}, {country})");
-                    }
+                    var (safeLat, safeLon) = ApplyResidentialOffset(latP.GetDouble(), lonP.GetDouble());
+                    string tz = root.TryGetProperty("timezone", out var tzP) ? tzP.GetString() ?? "America/Los_Angeles" : "America/Los_Angeles";
+                    string ip = root.TryGetProperty("ip", out var ipP) ? ipP.GetString() ?? "" : "";
+                    string city = root.TryGetProperty("city", out var cityP) ? cityP.GetString() ?? "" : "";
+                    string country = root.TryGetProperty("country_code", out var cP) ? cP.GetString() ?? "" : "";
+                    return (safeLat, safeLon, tz, Lang.T($"代理已连通 ({ip} - {city}, {country})", $"Proxy Connected ({ip} - {city}, {country})"));
                 }
             }
-            catch (HttpRequestException ex)
+            catch (Exception ex)
             {
-                return (34.0522, -118.2437, "America/Los_Angeles", $"代理端口连接失败，请检查软路由 IP/端口与协议 ({ex.Message})");
+                if (!string.IsNullOrEmpty(proxyUrl))
+                    return (34.0522, -118.2437, "America/Los_Angeles", Lang.T($"代理端口连接失败 ({ex.Message})", $"Proxy Connection Failed ({ex.Message})"));
             }
-            catch { }
 
-            // 备用接口 2：ipinfo.io
             try
             {
                 string json = await client.GetStringAsync("https://ipinfo.io");
-                if (json.TrimStart().StartsWith("{"))
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("loc", out var locP))
                 {
-                    using var doc = JsonDocument.Parse(json);
-                    var root = doc.RootElement;
-                    if (root.TryGetProperty("loc", out var locProp))
+                    string[] parts = (locP.GetString() ?? "34.0522,-118.2437").Split(',');
+                    if (parts.Length == 2 && double.TryParse(parts[0], out double lat) && double.TryParse(parts[1], out double lon))
                     {
-                        string[] parts = locProp.GetString()!.Split(',');
-                        if (parts.Length >= 2)
-                        {
-                            double rawLat = double.Parse(parts.GetValue(0)!.ToString()!, CultureInfo.InvariantCulture);
-                            double rawLon = double.Parse(parts.GetValue(1)!.ToString()!, CultureInfo.InvariantCulture);
-                            var (safeLat, safeLon) = ApplyResidentialOffset(rawLat, rawLon);
-                            string tz = root.TryGetProperty("timezone", out var tzP) ? tzP.GetString() ?? "America/Los_Angeles" : "America/Los_Angeles";
-                            string ip = root.TryGetProperty("ip", out var ipP) ? ipP.GetString() ?? "" : "";
-                            string city = root.TryGetProperty("city", out var cityP) ? cityP.GetString() ?? "" : "";
-                            string country = root.TryGetProperty("country", out var cP) ? cP.GetString() ?? "" : "";
-                            return (safeLat, safeLon, tz, $"代理已连通 ({ip} - {city}, {country})");
-                        }
-                    }
-                }
-            }
-            catch { }
-
-            // 备用接口 3：ipapi.co
-            try
-            {
-                string json = await client.GetStringAsync("https://ipapi.co");
-                if (json.TrimStart().StartsWith("{"))
-                {
-                    using var doc = JsonDocument.Parse(json);
-                    var root = doc.RootElement;
-                    if (root.TryGetProperty("latitude", out var latP) && root.TryGetProperty("longitude", out var lonP))
-                    {
-                        var (safeLat, safeLon) = ApplyResidentialOffset(latP.GetDouble(), lonP.GetDouble());
+                        var (safeLat, safeLon) = ApplyResidentialOffset(lat, lon);
                         string tz = root.TryGetProperty("timezone", out var tzP) ? tzP.GetString() ?? "America/Los_Angeles" : "America/Los_Angeles";
                         string ip = root.TryGetProperty("ip", out var ipP) ? ipP.GetString() ?? "" : "";
                         string city = root.TryGetProperty("city", out var cityP) ? cityP.GetString() ?? "" : "";
-                        string country = root.TryGetProperty("country_code", out var cP) ? cP.GetString() ?? "" : "";
-                        return (safeLat, safeLon, tz, $"代理已连通 ({ip} - {city}, {country})");
+                        string country = root.TryGetProperty("country", out var cP) ? cP.GetString() ?? "" : "";
+                        return (safeLat, safeLon, tz, Lang.T($"代理已连通 ({ip} - {city}, {country})", $"Proxy Connected ({ip} - {city}, {country})"));
                     }
                 }
             }
             catch { }
 
             var (defLat, defLon) = ApplyResidentialOffset(34.0522, -118.2437);
-            return (defLat, defLon, "America/Los_Angeles", "代理已通(查询接口受限，已使用微调美国坐标)");
+            return (defLat, defLon, "America/Los_Angeles", Lang.T("代理已通(查询接口受限，已使用微调美国坐标)", "Proxy Connected (Default US Geolocation Applied)"));
         }
         private void ShowBottomRightToast(string taskTitle, bool isSuccess)
         {
@@ -857,7 +842,7 @@ namespace MyGeoBrowser2
 
             Label lblTitle = new Label
             {
-                Text = isSuccess ? "✅ 后台媒体下载完成" : "❌ 后台媒体下载失败",
+                Text = isSuccess ? Lang.T("✅ 后台媒体下载完成", "✅ Download Completed") : Lang.T("❌ 后台媒体下载失败", "❌ Download Failed"),
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 10f, FontStyle.Bold),
                 Location = new Point(12, 10),
@@ -867,7 +852,7 @@ namespace MyGeoBrowser2
             string shortName = taskTitle.Length > 34 ? taskTitle.Substring(0, 34) + "..." : taskTitle;
             Label lblDesc = new Label
             {
-                Text = shortName + "\n(5秒后自动关闭，点击可打开下载目录)",
+                Text = shortName + Lang.T("\n(5秒后自动关闭，点击可打开下载目录)", "\n(Auto-closes in 5s, click to open folder)"),
                 ForeColor = Color.WhiteSmoke,
                 Font = new Font("Segoe UI", 8.5f),
                 Location = new Point(12, 34),

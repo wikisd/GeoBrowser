@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 
 namespace MyGeoBrowser2
 {
@@ -16,11 +15,13 @@ namespace MyGeoBrowser2
     {
         public string Title { get; set; } = "";
         public string Url { get; set; } = "";
-        public string MediaType { get; set; } = "帖子/视频";
+        public string MediaType { get; set; } = Lang.T("帖子/视频", "Post/Video");
     }
 
     public class DownloadManagerForm : Form
     {
+        private Button btnStartChecked;
+        private Button btnUpdatePlugins;
         private TextBox txtManualUrls;
         private ListView listTasks;
         private TextBox txtLog;
@@ -44,40 +45,42 @@ namespace MyGeoBrowser2
             this.downloadDir = saveFolder;
             this.proxyUrl = currentProxy;
             this.scrapeCallback = callback;
-            this.Text = "精准多媒体下载管理器 (已启用去广告与纯净提取)";
+            this.Text = Lang.T("精准多媒体下载管理器 (已启用去广告与纯净提取)", "Precision Media Download Manager (Ad-Free & Clean Extract)");
             this.Size = new Size(1060, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
+            Icon? exeIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            if (exeIcon != null) this.Icon = exeIcon;
 
             Panel pluginBar = new Panel { Dock = DockStyle.Top, Height = 38, BackColor = Color.FromArgb(240, 248, 255), Padding = new Padding(8, 5, 8, 5) };
-            lblPluginStatus = new Label { Text = "正在检查组件...", AutoSize = true, Dock = DockStyle.Left, Font = new Font("Segoe UI", 9f, FontStyle.Bold), Padding = new Padding(0, 4, 10, 0) };
-            Button btnUpdatePlugins = new Button { Text = "一键更新 yt-dlp 和 gallery-dl", Width = 210, Dock = DockStyle.Right, BackColor = Color.FromArgb(111, 66, 193), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            lblPluginStatus = new Label { Text = Lang.T("正在检查组件状态...", "Checking plugin status..."), AutoSize = true, Dock = DockStyle.Left, Font = new Font("Segoe UI", 9f, FontStyle.Bold), Padding = new Padding(0, 4, 10, 0) };
+            btnUpdatePlugins = new Button { Text = Lang.T("一键更新 yt-dlp 和 gallery-dl", "Update yt-dlp & gallery-dl"), Width = 210, Dock = DockStyle.Right, BackColor = Color.FromArgb(111, 66, 193), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
             btnUpdatePlugins.Click += async (s, e) => await UpdateAllPluginsAsync();
             pluginBar.Controls.Add(btnUpdatePlugins);
             pluginBar.Controls.Add(lblPluginStatus);
 
             Panel manualPanel = new Panel { Dock = DockStyle.Top, Height = 68, Padding = new Padding(5) };
-            Label lblManual = new Label { Text = "手动添加链接（可选，支持批量粘贴多行链接）：", Dock = DockStyle.Top, Height = 20, Font = new Font("Segoe UI", 9f, FontStyle.Bold) };
+            Label lblManual = new Label { Text = Lang.T("手动添加链接（可选，支持批量粘贴多行链接）：", "Manual URLs (Optional, supports multiple lines):"), Dock = DockStyle.Top, Height = 20, Font = new Font("Segoe UI", 9f, FontStyle.Bold) };
             txtManualUrls = new TextBox { Multiline = true, ScrollBars = ScrollBars.Vertical, Dock = DockStyle.Fill, Font = new Font("Segoe UI", 9.5f) };
-            Button btnAddManual = new Button { Text = "添加到下方列表", Width = 120, Dock = DockStyle.Right };
+            Button btnAddManual = new Button { Text = Lang.T("添加到下方列表", "Add to List"), Width = 120, Dock = DockStyle.Right };
             btnAddManual.Click += (s, e) => AddManualTextToList();
             manualPanel.Controls.Add(txtManualUrls);
             manualPanel.Controls.Add(btnAddManual);
             manualPanel.Controls.Add(lblManual);
 
             Panel actionPanel = new Panel { Dock = DockStyle.Top, Height = 44, BackColor = Color.FromArgb(248, 249, 250), Padding = new Padding(5) };
-            Button btnScrapeClean = new Button { Text = "⚡ 精准抓取当前页纯净内容", Width = 195, Dock = DockStyle.Left, BackColor = Color.FromArgb(23, 162, 184), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
-            Button btnSelectAll = new Button { Text = "全选", Width = 55, Dock = DockStyle.Left };
-            Button btnUnselectAll = new Button { Text = "全不选", Width = 65, Dock = DockStyle.Left };
-            Button btnRemoveUnchecked = new Button { Text = "移除未勾选", Width = 85, Dock = DockStyle.Left };
-            Button btnStartChecked = new Button { Text = "▶ 下载已勾选项", Width = 125, Dock = DockStyle.Left, BackColor = Color.FromArgb(0, 120, 215), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            Button btnScrapeClean = new Button { Text = Lang.T("⚡ 精准抓取当前页纯净内容", "⚡ Extract Current Page"), Width = 195, Dock = DockStyle.Left, BackColor = Color.FromArgb(23, 162, 184), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            Button btnSelectAll = new Button { Text = Lang.T("全选", "Select All"), Width = 55, Dock = DockStyle.Left };
+            Button btnUnselectAll = new Button { Text = Lang.T("全不选", "Deselect All"), Width = 65, Dock = DockStyle.Left };
+            Button btnRemoveUnchecked = new Button { Text = Lang.T("移除未勾选", "Remove Unchecked"), Width = 85, Dock = DockStyle.Left };
+            btnStartChecked = new Button { Text = Lang.T("▶ 下载已勾选项", "▶ Download Selected"), Width = 125, Dock = DockStyle.Left, BackColor = Color.FromArgb(0, 120, 215), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
 
             cmbEngineMode = new ComboBox { Width = 190, Dock = DockStyle.Right, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 9f) };
-            cmbEngineMode.Items.Add("自动识别引擎");
-            cmbEngineMode.Items.Add("仅用 yt-dlp (视频)");
-            cmbEngineMode.Items.Add("仅用 gallery-dl (图集)");
+            cmbEngineMode.Items.Add(Lang.T("自动识别引擎", "Auto Detect Engine"));
+            cmbEngineMode.Items.Add(Lang.T("仅用 yt-dlp (视频)", "yt-dlp Only (Video)"));
+            cmbEngineMode.Items.Add(Lang.T("仅用 gallery-dl (图集)", "gallery-dl Only (Gallery)"));
             cmbEngineMode.SelectedIndex = 0;
 
-            Button btnOpenFolder = new Button { Text = "打开下载文件夹", Width = 115, Dock = DockStyle.Right };
+            Button btnOpenFolder = new Button { Text = Lang.T("打开下载文件夹", "Open Folder"), Width = 115, Dock = DockStyle.Right };
 
             btnScrapeClean.Click += async (s, e) => await ScrapeCleanItemsAsync();
             btnSelectAll.Click += (s, e) => { foreach (ListViewItem item in listTasks.Items) item.Checked = true; };
@@ -95,10 +98,10 @@ namespace MyGeoBrowser2
             actionPanel.Controls.Add(btnScrapeClean);
 
             listTasks = new ListView { View = View.Details, CheckBoxes = true, FullRowSelect = true, GridLines = true, Dock = DockStyle.Fill, Font = new Font("Segoe UI", 9.5f) };
-            listTasks.Columns.Add("勾选 / 标题摘要", 260);
-            listTasks.Columns.Add("精准链接", 420);
-            listTasks.Columns.Add("状态", 140);
-            listTasks.Columns.Add("类型", 130);
+            listTasks.Columns.Add(Lang.T("勾选 / 标题摘要", "Select / Title"), 260);
+            listTasks.Columns.Add(Lang.T("精准链接", "Target URL"), 380);
+            listTasks.Columns.Add(Lang.T("状态", "Status"), 140);
+            listTasks.Columns.Add(Lang.T("类型", "Type"), 130);
 
             txtLog = new TextBox { Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, Dock = DockStyle.Bottom, Height = 135, BackColor = Color.Black, ForeColor = Color.LightGreen, Font = new Font("Consolas", 9f) };
 
@@ -124,11 +127,16 @@ namespace MyGeoBrowser2
         private void CheckPluginsStatus()
         {
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            bool hasYtDlp = File.Exists(Path.Combine(baseDir, "yt-dlp.exe"));
-            bool hasFfmpeg = File.Exists(Path.Combine(baseDir, "ffmpeg.exe"));
-            bool hasGalleryDl = File.Exists(Path.Combine(baseDir, "gallery-dl.exe"));
-            lblPluginStatus.Text = $"组件检测：yt-dlp {(hasYtDlp ? "✅" : "❌")} | ffmpeg {(hasFfmpeg ? "✅" : "❌")} | gallery-dl {(hasGalleryDl ? "✅" : "❌")}";
+            bool hasYt = File.Exists(Path.Combine(baseDir, "yt-dlp.exe"));
+            bool hasFf = File.Exists(Path.Combine(baseDir, "ffmpeg.exe"));
+            bool hasGl = File.Exists(Path.Combine(baseDir, "gallery-dl.exe"));
+
+            lblPluginStatus.Text = Lang.T(
+                $"组件检测: yt-dlp {(hasYt ? "✅" : "❌")} | ffmpeg {(hasFf ? "✅" : "❌")} | gallery-dl {(hasGl ? "✅" : "❌")}",
+                $"Plugins: yt-dlp {(hasYt ? "✅" : "❌")} | ffmpeg {(hasFf ? "✅" : "❌")} | gallery-dl {(hasGl ? "✅" : "❌")}"
+            );
         }
+
 
         public void UpdateProxy(string newProxy)
         {
@@ -145,7 +153,7 @@ namespace MyGeoBrowser2
             }
             var item = new ListViewItem(string.IsNullOrWhiteSpace(title) ? "单个媒体任务" : title);
             item.SubItems.Add(url);
-            item.SubItems.Add("等待下载");
+            item.SubItems.Add(Lang.T("等待下载", "Pending"));
             item.SubItems.Add(mediaType);
             item.Checked = autoChecked;
             listTasks.Items.Add(item);
@@ -192,35 +200,32 @@ namespace MyGeoBrowser2
         private async Task UpdateAllPluginsAsync()
         {
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            AppendLog("=== 开始通过系统 curl + 代理更新核心组件 ===");
+            AppendLog(Lang.T("=== 开始通过系统 curl + 代理更新核心组件 ===", "=== Updating core plugins via curl + proxy ==="));
 
-            // 1. 更新 yt-dlp.exe
             await DownloadWithCurlAsync(
                 "yt-dlp",
                 "https://github.com",
                 Path.Combine(baseDir, "yt-dlp.exe")
             );
 
-            // 2. 更新 gallery-dl.exe
             await DownloadWithCurlAsync(
                 "gallery-dl",
                 "https://github.com",
                 Path.Combine(baseDir, "gallery-dl.exe")
             );
 
-            // 3. 检查 ffmpeg.exe 版本状态（ffmpeg 无需频繁更新，仅检测可用性）
             string ffmpegPath = Path.Combine(baseDir, "ffmpeg.exe");
             if (File.Exists(ffmpegPath))
             {
-                AppendLog(">>> 正在检测 ffmpeg.exe 状态...");
+                AppendLog(Lang.T(">>> 正在检测 ffmpeg.exe 状态...", ">>> Checking ffmpeg.exe status..."));
                 await RunProcessAsync(ffmpegPath, "-version");
             }
             else
             {
-                AppendLog("[提示] 未找到 ffmpeg.exe，请手动放入 GPL 静态版。");
+                AppendLog(Lang.T("[提示] 未找到 ffmpeg.exe，请手动放入 GPL 静态版。", "[Notice] ffmpeg.exe not found. Please place static GPL build."));
             }
 
-            AppendLog("=== 组件更新与检测全部结束 ===");
+            AppendLog(Lang.T("=== 组件更新与检测全部结束 ===", "=== Plugin update & check finished ==="));
             CheckPluginsStatus();
         }
 
@@ -228,14 +233,15 @@ namespace MyGeoBrowser2
         {
             try
             {
-                AppendLog($">>> 正在连接 GitHub 获取最新版 {name}.exe ...");
+                AppendLog(Lang.T($">>> 正在连接 GitHub 获取最新版 {name}.exe ...", $">>> Connecting to GitHub for latest {name}.exe ..."));
                 string tempPath = targetPath + ".new";
                 if (File.Exists(tempPath)) File.Delete(tempPath);
 
-                // 调用 Windows 自带的 curl.exe，完美兼容 socks5 和 http 代理及 SSL 证书
-                string proxyArg = string.IsNullOrEmpty(proxyUrl) ? "" : $"-x \"{proxyUrl}\" ";
-                string curlArgs = $"-L -s -S --fail {proxyArg}-o \"{tempPath}\" \"{downloadUrl}\"";
+                // 将 socks5:// 转换为 socks5h://，让代理服务器远程解析 GitHub 域名，彻底解决更新失败
+                string fixedProxy = proxyUrl.Replace("socks5://", "socks5h://");
+                string proxyArg = string.IsNullOrEmpty(fixedProxy) ? "" : $"-x \"{fixedProxy}\" ";
 
+                string curlArgs = $"-L -s -S --fail {proxyArg}-o \"{tempPath}\" \"{downloadUrl}\"";
                 bool ok = await RunProcessAsync("curl.exe", curlArgs);
 
                 if (ok && File.Exists(tempPath) && new FileInfo(tempPath).Length > 1024 * 1024)
@@ -243,17 +249,17 @@ namespace MyGeoBrowser2
                     long sizeMb = new FileInfo(tempPath).Length / 1024 / 1024;
                     if (File.Exists(targetPath)) File.Delete(targetPath);
                     File.Move(tempPath, targetPath);
-                    AppendLog($"[成功] {name}.exe 已更新至官方最新版本！（大小：{sizeMb} MB）");
+                    AppendLog(Lang.T($"[成功] {name}.exe 已更新至官方最新版本！（大小：{sizeMb} MB）", $"[Success] {name}.exe updated to latest official version! ({sizeMb} MB)"));
                 }
                 else
                 {
                     if (File.Exists(tempPath)) File.Delete(tempPath);
-                    AppendLog($"[失败] {name}.exe 更新失败，请检查代理是否能正常访问 GitHub。");
+                    AppendLog(Lang.T($"[失败] {name}.exe 更新失败，请检查代理是否能正常访问 GitHub。", $"[Failed] {name}.exe update failed. Check proxy connection to GitHub."));
                 }
             }
             catch (Exception ex)
             {
-                AppendLog($"[异常] {name}.exe 更新出错：{ex.Message}");
+                AppendLog(Lang.T($"[异常] {name}.exe 更新出错：{ex.Message}", $"[Error] {name}.exe update error: {ex.Message}"));
             }
         }
 
@@ -288,7 +294,7 @@ namespace MyGeoBrowser2
                     var statusSub = item.SubItems.Cast<ListViewItem.ListViewSubItem>().ElementAt(2);
                     var typeSub = item.SubItems.Cast<ListViewItem.ListViewSubItem>().ElementAt(3);
 
-                    if (statusSub.Text == "等待下载" || statusSub.Text.Contains("失败"))
+                    if (statusSub.Text == Lang.T("等待下载", "Pending") || statusSub.Text.Contains(Lang.T("失败", "Failed")))
                     {
                         string targetUrl = urlSub.Text;
                         // 从标题 "[博主名] 摘要" 中提取出博主账号名（如果没有则用 Unknown）
@@ -321,11 +327,11 @@ namespace MyGeoBrowser2
                             }
                             catch { }
                         }
-                        statusSub.Text = "正在下载...";
-                        AppendLog($">>> 开始精准下载 (归档账号: {extractedAuthor}): {targetUrl}");
+                        statusSub.Text = Lang.T("正在下载...", "Downloading...");
+                        AppendLog(Lang.T($">>> 开始精准下载 (归档账号: {extractedAuthor}): {targetUrl}", $">>> Starting download (Account: {extractedAuthor}): {targetUrl}"));
 
                         bool ok = false;
-                        if (typeSub.Text == "单张原图")
+                        if (typeSub.Text == Lang.T("单张原图", "Single Image"))
                         {
                             ok = await DownloadDirectImageAsync(targetUrl, extractedAuthor);
                         }
@@ -342,18 +348,18 @@ namespace MyGeoBrowser2
                             ok = await RunYtDlpAsync(ytdlpPath, targetUrl, extractedAuthor);
                             if (!ok && File.Exists(galleryPath))
                             {
-                                AppendLog("[切换] 自动切换 gallery-dl 抓取高清原图...");
+                                AppendLog(Lang.T("[切换] 自动切换 gallery-dl 抓取高清原图...", "[Fallback] Switching to gallery-dl for original images..."));
                                 ok = await RunGalleryDlAsync(galleryPath, targetUrl, extractedAuthor);
                             }
                         }
 
-                        statusSub.Text = ok ? "下载完成 ✅" : "下载失败 ❌";
+                        statusSub.Text = ok ? Lang.T("下载完成 ✅", "Completed ✅") : Lang.T("下载失败 ❌", "Failed ❌");
                         OnTaskFinished?.Invoke(item.Text, ok);
                         if (ok)
                         {
                             item.Checked = false;
                             int delaySec = new Random().Next(3, 7);
-                            AppendLog($"[防风控保护] 安全等待 {delaySec} 秒后继续下一个任务...");
+                            AppendLog(Lang.T($"[防风控保护] 安全等待 {delaySec} 秒后继续下一个任务...", $"[Rate-Limit Guard] Waiting {delaySec}s before next task..."));
                             await Task.Delay(delaySec * 1000);
                         }
                     }
@@ -469,7 +475,7 @@ namespace MyGeoBrowser2
                     };
                     using var proc = new Process { StartInfo = psi };
                     proc.OutputDataReceived += (s, e) => { if (!string.IsNullOrEmpty(e.Data)) AppendLog(e.Data); };
-                    proc.ErrorDataReceived += (s, e) => { if (!string.IsNullOrEmpty(e.Data)) AppendLog("[状态] " + e.Data); };
+                    proc.ErrorDataReceived += (s, e) => { if (!string.IsNullOrEmpty(e.Data)) AppendLog(Lang.T("[状态] ", "[Info] ") + e.Data); };
                     proc.Start();
                     proc.BeginOutputReadLine();
                     proc.BeginErrorReadLine();
@@ -477,14 +483,14 @@ namespace MyGeoBrowser2
 
                     if (proc.ExitCode == 0)
                     {
-                        AppendLog("[完成] 音视频处理与合并已全部结束！");
+                        AppendLog(Lang.T("[完成] 音视频处理与合并已全部结束！", "[Done] Media processing & merging completed!"));
                         return true;
                     }
                     return false;
                 }
                 catch (Exception ex)
                 {
-                    AppendLog("[异常] " + ex.Message);
+                    AppendLog(Lang.T("[异常] ", "[Exception] ") + ex.Message);
                     return false;
                 }
             });
