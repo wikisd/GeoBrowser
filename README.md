@@ -5,6 +5,7 @@
 [English Documentation](#english-documentation)
 
 ---
+<img width="1486" height="913" alt="31" src="https://github.com/user-attachments/assets/d4d588e4-66e3-4548-9954-2a41b8041f17" />
 
 ## ✨ 核心功能
 
@@ -17,6 +18,10 @@
   - 全面支持 **Instagram、Facebook、YouTube、X (Twitter) 与 TikTok**。
   - **右键精准直下**：在网页任意图片或视频链接上右键点击，即可单条静默加入后台下载（完成后右下角弹出 5 秒自动关闭提示框）。
   - **批量纯净提取**：自动过滤推广广告与侧边栏推荐，提取页面有效内容列表供勾选下载，并自动按 **`Downloads \ 平台 \ 账号名 \ 日期`** 归档保存。
+
+## 📥 软件下载
+
+请前往仓库右侧的 **[Releases 发行版页面](https://github.com/wikisd/GeoBrowser/releases)** 下载最新打包好的完整压缩包（内置完整运行依赖环境），解压至常规目录（如 `D:\GeoBrowser`）后，直接双击 **`GeoBrowser.exe`** 即可免安装运行。
 
 ## 📦 运行依赖组件
 
@@ -63,6 +68,10 @@ A lightweight Windows desktop browser built on WebView2 (.NET), featuring isolat
   - Supports **Instagram, Facebook, YouTube, X (Twitter), and TikTok**.
   - **Context Menu Download**: Right-click any image or video link to download single items silently in the background with 5-second toast notifications.
   - **Batch Extraction**: Extracts clean post and video lists from feeds or creator profiles while filtering out promoted content, with automatic folder archiving (`Downloads \ Platform \ Account \ Date`).
+
+## 📥 Download
+
+Please visit the **[Releases Page](https://github.com/wikisd/GeoBrowser/releases)** on the right sidebar to download the latest pre-packaged archive (bundled with all required runtime binaries). Extract it to a standard folder (e.g., `D:\GeoBrowser`) and run **`GeoBrowser.exe`** directly without installation.
 
 ## 📦 Prerequisites
 
