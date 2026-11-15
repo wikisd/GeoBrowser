@@ -776,29 +776,9 @@ namespace MyGeoBrowser2
                 handler.UseProxy = true;
             }
             using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(8) };
-            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
+            client.DefaultRequestHeaders.Add("User-Agent", "curl/8.0.0");
 
-            try
-            {
-                string json = await client.GetStringAsync("https://ip.sb");
-                using var doc = JsonDocument.Parse(json);
-                var root = doc.RootElement;
-                if (root.TryGetProperty("latitude", out var latP) && root.TryGetProperty("longitude", out var lonP))
-                {
-                    var (safeLat, safeLon) = ApplyResidentialOffset(latP.GetDouble(), lonP.GetDouble());
-                    string tz = root.TryGetProperty("timezone", out var tzP) ? tzP.GetString() ?? "America/Los_Angeles" : "America/Los_Angeles";
-                    string ip = root.TryGetProperty("ip", out var ipP) ? ipP.GetString() ?? "" : "";
-                    string city = root.TryGetProperty("city", out var cityP) ? cityP.GetString() ?? "" : "";
-                    string country = root.TryGetProperty("country_code", out var cP) ? cP.GetString() ?? "" : "";
-                    return (safeLat, safeLon, tz, Lang.T($"代理已连通 ({ip} - {city}, {country})", $"Proxy Connected ({ip} - {city}, {country})"));
-                }
-            }
-            catch (Exception ex)
-            {
-                if (!string.IsNullOrEmpty(proxyUrl))
-                    return (34.0522, -118.2437, "America/Los_Angeles", Lang.T($"代理端口连接失败 ({ex.Message})", $"Proxy Connection Failed ({ex.Message})"));
-            }
-
+            // 接口 1：ipinfo.io（稳定返回 JSON，不易触发纯文本拦截）
             try
             {
                 string json = await client.GetStringAsync("https://ipinfo.io");
@@ -806,14 +786,55 @@ namespace MyGeoBrowser2
                 var root = doc.RootElement;
                 if (root.TryGetProperty("loc", out var locP))
                 {
-                    string[] parts = (locP.GetString() ?? "34.0522,-118.2437").Split(',');
-                    if (parts.Length == 2 && double.TryParse(parts[0], out double lat) && double.TryParse(parts[1], out double lon))
+                    string[] parts = (locP.GetString() ?? "").Split(',');
+                    if (parts.Length == 2 &&
+                        double.TryParse(parts[0], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double lat) &&
+                        double.TryParse(parts[1], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double lon))
                     {
                         var (safeLat, safeLon) = ApplyResidentialOffset(lat, lon);
                         string tz = root.TryGetProperty("timezone", out var tzP) ? tzP.GetString() ?? "America/Los_Angeles" : "America/Los_Angeles";
                         string ip = root.TryGetProperty("ip", out var ipP) ? ipP.GetString() ?? "" : "";
                         string city = root.TryGetProperty("city", out var cityP) ? cityP.GetString() ?? "" : "";
                         string country = root.TryGetProperty("country", out var cP) ? cP.GetString() ?? "" : "";
+                        return (safeLat, safeLon, tz, Lang.T($"代理已连通 ({ip} - {city}, {country})", $"Proxy Connected ({ip} - {city}, {country})"));
+                    }
+                }
+            }
+            catch { }
+
+            // 接口 2：ip-api.com 备用接口
+            try
+            {
+                string json = await client.GetStringAsync("http://ip-api.com");
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("lat", out var latP) && root.TryGetProperty("lon", out var lonP))
+                {
+                    var (safeLat, safeLon) = ApplyResidentialOffset(latP.GetDouble(), lonP.GetDouble());
+                    string tz = root.TryGetProperty("timezone", out var tzP) ? tzP.GetString() ?? "America/Los_Angeles" : "America/Los_Angeles";
+                    string ip = root.TryGetProperty("query", out var ipP) ? ipP.GetString() ?? "" : "";
+                    string city = root.TryGetProperty("city", out var cityP) ? cityP.GetString() ?? "" : "";
+                    string country = root.TryGetProperty("countryCode", out var cP) ? cP.GetString() ?? "" : "";
+                    return (safeLat, safeLon, tz, Lang.T($"代理已连通 ({ip} - {city}, {country})", $"Proxy Connected ({ip} - {city}, {country})"));
+                }
+            }
+            catch { }
+
+            // 接口 3：api.ip.sb 兜底接口
+            try
+            {
+                string json = await client.GetStringAsync("https://ip.sb");
+                if (json.TrimStart().StartsWith("{"))
+                {
+                    using var doc = JsonDocument.Parse(json);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("latitude", out var latP) && root.TryGetProperty("longitude", out var lonP))
+                    {
+                        var (safeLat, safeLon) = ApplyResidentialOffset(latP.GetDouble(), lonP.GetDouble());
+                        string tz = root.TryGetProperty("timezone", out var tzP) ? tzP.GetString() ?? "America/Los_Angeles" : "America/Los_Angeles";
+                        string ip = root.TryGetProperty("ip", out var ipP) ? ipP.GetString() ?? "" : "";
+                        string city = root.TryGetProperty("city", out var cityP) ? cityP.GetString() ?? "" : "";
+                        string country = root.TryGetProperty("country_code", out var cP) ? cP.GetString() ?? "" : "";
                         return (safeLat, safeLon, tz, Lang.T($"代理已连通 ({ip} - {city}, {country})", $"Proxy Connected ({ip} - {city}, {country})"));
                     }
                 }
