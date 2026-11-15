@@ -83,12 +83,13 @@ Place the following open-source binaries in the same directory as `GeoBrowser.ex
 
 ## 🚀 Quick Start
 
-1. **Setup Proxy**: Check **"启用独立代理"**, select `socks5` or `http`, enter `IP:Port` (e.g., `192.168.1.1:7890`), and click **"保存代理并重启"**.
-2. **Sync Location**: Whenever switching proxy nodes, click **"🔄 同步当前IP定位"** to update browser coordinates and timezone in real time.
-3. **Download Media**:
+1. **Switch Language (Optional)**: Click the **"🌐 EN"** button on the top proxy bar to switch the entire interface to English.
+2. **Setup Proxy**: Check **"Enable Proxy (IP:Port)"**, select `socks5` or `http`, enter `IP:Port` (e.g., `192.168.1.1:7890`), and click **"Save & Restart"**.
+3. **Sync Location**: Whenever switching proxy nodes, click **"🔄 Sync IP Location"** to update browser coordinates and timezone in real time.
+4. **Download Media**:
    - Right-click any media/link on a webpage to download immediately in the background.
-   - Or click **"⚡ 抓本页列表"** on the top bar to batch-select posts from the current page.
-4. **Multi-Instance**: Copy the entire application folder to run multiple completely isolated browser profiles (`BrowserData`).
+   - Or click **"⚡ Extract Page"** on the top bar to batch-select posts from the current page.
+5. **Multi-Instance**: Copy the entire application folder to run multiple completely isolated browser profiles (`BrowserData`).
 
 ## 🌐 IPv6 Network Notes
 
