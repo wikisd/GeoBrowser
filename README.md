@@ -5,6 +5,7 @@
 [English Documentation](#english-documentation)
 
 ---
+<img width="1486" height="913" alt="31" src="https://github.com/user-attachments/assets/d4d588e4-66e3-4548-9954-2a41b8041f17" />
 
 ## ✨ 核心功能
 
